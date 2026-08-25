@@ -90,9 +90,13 @@ class Interface:
             }
         }
 
-        for param in default_params:
+        for param, default_value in default_params.items():
             if param not in self.params:
-                self.params[param] = default_params[param]
+                self.params[param] = default_value
+            elif isinstance(default_value, dict) and isinstance(self.params[param], dict):
+                # deep-merge: fill in any nested keys the user config omitted
+                for key, value in default_value.items():
+                    self.params[param].setdefault(key, value)
 
         scale = params['zoom']
         self.distance_scale = float(scale / EARTH_RADIUS)
@@ -247,7 +251,7 @@ class Interface:
                 if save_points:
                     projected_points[f'orbit_{counter}'] = {'points': np.delete(points_model, 2, axis=1), 'color': orbit.color}
                 counter += 1
-                
+
 
         # Cache the view-projection matrix outside the loop
         VP = three_d.Camera.View_Projection_matrix()
@@ -267,7 +271,7 @@ class Interface:
                 # label_year = font.render(text_year, True, self.params["timestamp"]["color"])
                 # rect_year = label_year.get_rect()
                 # rect_year.topleft = (10, 10)
-                
+
                 # text_payloads = f'Payloads: {info["total_payloads"]}'
                 # label_payloads = font.render(text_payloads, True, self.params["timestamp"]["color"])
                 # rect_payloads = label_payloads.get_rect(topleft=(10, rect_year.bottom + 5))
@@ -379,7 +383,7 @@ class Interface:
                 # draw label if name exists
                 if show_label and body.name:
                     color_label = self.params["body"][body.name]["color_label"] if "body" in self.params and body.name in self.params["body"] and "color_label" in self.params["body"][body.name] else self.params["bodies"]["color_label"]
-                    
+
                     # Use a scaled position matrix multiply only once
                     center = self._project_to_screen(x, y, z, sphere, VP)
 
@@ -581,4 +585,3 @@ class Interface:
 
     def arrow_func(self, t, vector, scale=1):
         return [t * component * scale for component in vector]
-    
