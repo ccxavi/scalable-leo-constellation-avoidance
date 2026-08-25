@@ -51,6 +51,7 @@ dependencies = [
 Homepage = "https://github.com/orbitzoo/orbit_zoo"
 
 [project.scripts]
+oz = "orbitzoo.cli:main"
 orbitzoo-demo = "orbitzoo.env:main"
 
 [tool.setuptools.packages.find]

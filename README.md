@@ -87,6 +87,21 @@ pip install orbitzoo
 from orbitzoo import OrbitZoo
 ```
 
+## Command-line interface
+
+Installing OrbitZoo provides the short `oz` command:
+
+```sh
+oz --help
+oz demo
+oz missions
+oz mission hohmann
+oz run path/to/mission.py
+```
+
+`oz run` and `oz mission` pass any remaining arguments to the selected script.
+The legacy `orbitzoo-demo` command remains available for compatibility.
+
 # Tensorgator: Use Cases
 
 Tensorgator is the go-to option if you want to create a system with the following specifications:
