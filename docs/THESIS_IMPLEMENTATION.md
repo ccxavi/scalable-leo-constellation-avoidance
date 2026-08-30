@@ -50,6 +50,6 @@ four local neighbors, seven discrete actions, and a 300-second decision interval
 ## Current status
 
 The discrete MAPPO implementation is validated independently of orbital physics.
-See [MAPPO.md](MAPPO.md) for its CTDE design and rollout API. The immediate
-implementation objective is to validate learning in a small deterministic toy
-environment before connecting the policy to orbital simulation.
+See [MAPPO.md](MAPPO.md) for its CTDE design and rollout API. The deterministic
+[toy environment](TOY_ENVIRONMENT.md) validates end-to-end shared-policy learning
+before the policy is connected to orbital simulation.
