@@ -7,6 +7,18 @@ import json
 from pathlib import Path
 from typing import Any
 
+from orbitzoo.thesis.maneuvers.contract import ManeuverConfig
+
+
+def default_maneuver_config() -> ManeuverConfig:
+    """Return provisional maneuver defaults for development and test runs."""
+    return ManeuverConfig(
+        commanded_delta_v_mps=0.01,
+        maximum_thrust_newtons=0.1,
+        specific_impulse_seconds=300.0,
+        maximum_burn_duration_seconds=60.0,
+    )
+
 
 @dataclass(frozen=True)
 class EnvironmentConfig:
@@ -82,6 +94,7 @@ class ExperimentConfig:
     environment: EnvironmentConfig = field(default_factory=EnvironmentConfig)
     policy: PolicyConfig = field(default_factory=PolicyConfig)
     training: TrainingConfig = field(default_factory=TrainingConfig)
+    maneuver: ManeuverConfig = field(default_factory=default_maneuver_config)
     schema_version: int = 1
 
     def validate(self) -> None:
@@ -90,6 +103,7 @@ class ExperimentConfig:
         self.environment.validate()
         self.policy.validate()
         self.training.validate()
+        self.maneuver.validate()
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
@@ -111,6 +125,7 @@ class ExperimentConfig:
             environment=EnvironmentConfig(**raw["environment"]),
             policy=PolicyConfig(**raw["policy"]),
             training=TrainingConfig(**raw["training"]),
+            maneuver=ManeuverConfig(**raw["maneuver"]) if "maneuver" in raw else default_maneuver_config(),
         )
         config.validate()
         return config

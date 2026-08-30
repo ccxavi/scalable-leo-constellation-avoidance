@@ -18,7 +18,7 @@ class TensorgatorDynamics(Dynamics):
     def reset(self, seed: int = None):
         super().reset(seed)
 
-    def step(self, step_size: float = None, actions = None):
+    def step(self, step_size: float = None, actions = None, maneuver_durations = None):
         super().step(step_size)
         step_size = self.step_size if not step_size else float(step_size)
         # propagate

@@ -25,6 +25,7 @@ def test_config_round_trip(tmp_path):
     config.save(config_path)
 
     assert ExperimentConfig.load(config_path) == config
+    assert config.to_dict()["maneuver"]["commanded_delta_v_mps"] == 0.01
 
 
 def test_invalid_neighborhood_is_rejected():

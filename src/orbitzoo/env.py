@@ -128,14 +128,20 @@ class OrbitZoo(ParallelEnv):
             self.interface.reset()
         # return self.observations()
         
-    def step(self, step_size: float = None, actions: dict[str, list[float]] = None):
+    def step(
+            self,
+            step_size: float = None,
+            actions: dict[str, list[float]] = None,
+            maneuver_durations: dict[str, float] = None,
+            ):
         """
         Propagate all bodies of the system.
         Args:
             step_size (float): Optional step size (in seconds). If it is not provided, bodies are propagated using the default step size (self.step_size).
-            actions (dict[str, thrust]): Actions (thrusts in polar parameterization) for every spacecraft (if there are any). If it is not provided, it is assumed the spacecraft is not performing any thrust.
+            actions (dict[str, thrust]): RSW thrust vectors in newtons for each spacecraft. If omitted, all spacecraft coast.
+            maneuver_durations (dict[str, float]): Optional finite-burn durations in seconds for the corresponding actions. If omitted, an action burns for the whole propagation step.
         """
-        self.dynamics.step(step_size, actions)
+        self.dynamics.step(step_size, actions, maneuver_durations)
         # return self.observations()
     
     def observations(self):

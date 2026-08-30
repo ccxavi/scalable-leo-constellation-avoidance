@@ -135,21 +135,33 @@ class OrekitDynamics(Dynamics):
             prop_handler = PropagationHandler(propagators, self.initial_epoch, self.step_size)
             self.propagator = PropagatorsParallelizer(propagators, self.step_size, prop_handler)
 
-    def step(self, step_size = None, actions: dict[str, list[float]] = None):
+    def step(
+            self,
+            step_size = None,
+            actions: dict[str, list[float]] = None,
+            maneuver_durations: dict[str, float] = None,
+            ):
         step_size = self.step_size if not step_size else float(step_size)
 
         if not actions:
             actions = {}
+        if maneuver_durations is None:
+            maneuver_durations = {}
 
         for spacecraft in self.spacecrafts:
             spacecraft_name = spacecraft.name
-            # apply no thrust for spacecrafts that have not been mentioned in 'actions'
             if spacecraft_name not in actions:
                 actions[spacecraft_name] = None
-            spacecraft.change_thrust(actions[spacecraft_name], self.step_size)
-            # spacecraft.change_thrust(actions[spacecraft_name], 10.0)
+            duration = maneuver_durations.get(spacecraft_name, step_size)
+            if duration < 0 or duration > step_size:
+                raise ValueError("maneuver duration must be between zero and the propagation step size")
+            maneuver_durations[spacecraft_name] = duration
 
         if self.is_parallel_propagation:
+            for spacecraft in self.spacecrafts:
+                spacecraft.change_thrust(
+                    actions[spacecraft.name], maneuver_durations[spacecraft.name]
+                )
             initial_date = self.current_epoch
             self.current_epoch = initial_date.shiftedBy(step_size)
             states = self.propagator.propagate(initial_date, self.current_epoch)
@@ -180,7 +192,7 @@ class OrekitDynamics(Dynamics):
                         raise Exception(f"A drifter has crashed!")
             # propagate spacecrafts
             for body in self.spacecrafts:
-                body.step(step_size, actions[body.name], step_size)
+                body.step(step_size, actions[body.name], maneuver_durations[body.name])
                 if body.get_altitude() < EARTH_RADIUS:
                     raise Exception(f"{body.name} has crashed!")
 

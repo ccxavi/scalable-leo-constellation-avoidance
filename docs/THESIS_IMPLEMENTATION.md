@@ -46,6 +46,8 @@ Apple Metal (MPS), otherwise CPU. The choice is recorded for each run.
 The initial configuration is [configs/mappo_toy.json](../configs/mappo_toy.json).
 It fixes the architectural defaults—not final experimental values—to 16 agents,
 four local neighbors, seven discrete actions, and a 300-second decision interval.
+Its maneuver values are provisional development defaults and will be selected by
+bounded sensitivity analysis before final experiments.
 
 ## Current status
 
@@ -53,3 +55,6 @@ The discrete MAPPO implementation is validated independently of orbital physics.
 See [MAPPO.md](MAPPO.md) for its CTDE design and rollout API. The deterministic
 [toy environment](TOY_ENVIRONMENT.md) validates end-to-end shared-policy learning
 before the policy is connected to orbital simulation.
+
+The [maneuver contract](MANEUVER_CONTRACT.md) defines the discrete action IDs,
+their RSW thrust directions, finite-burn execution, and delta-v accounting.
