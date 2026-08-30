@@ -1,0 +1,24 @@
+{
+  "environment": {
+    "decision_interval_seconds": 300.0,
+    "episode_horizon": 100,
+    "neighborhood_size": 4,
+    "num_agents": 16
+  },
+  "policy": {
+    "algorithm": "mappo",
+    "global_state_dim": null,
+    "local_observation_dim": null,
+    "num_actions": 7
+  },
+  "schema_version": 1,
+  "seed": 42,
+  "training": {
+    "actor_learning_rate": 0.0003,
+    "critic_learning_rate": 0.001,
+    "gae_lambda": 0.95,
+    "gamma": 0.99,
+    "ppo_clip": 0.2,
+    "rollout_steps": 2048
+  }
+}

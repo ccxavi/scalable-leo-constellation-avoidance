@@ -20,6 +20,10 @@ ENV/
 # Training outputs
 trained_models/
 runs/
+checkpoints/
+data/
+*.pt
+*.pth
 
 # IDE / OS
 .vscode/

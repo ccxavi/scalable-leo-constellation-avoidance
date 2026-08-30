@@ -1,0 +1,55 @@
+import json
+import importlib.util
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from orbitzoo.thesis.config import EnvironmentConfig, ExperimentConfig
+from orbitzoo.thesis.runtime import create_run_directory, select_device
+
+
+requires_torch = pytest.mark.skipif(
+    importlib.util.find_spec("torch") is None,
+    reason="PyTorch is not installed in this Python environment",
+)
+
+
+def test_config_round_trip(tmp_path):
+    config = ExperimentConfig(seed=7)
+    config_path = tmp_path / "config.json"
+
+    config.save(config_path)
+
+    assert ExperimentConfig.load(config_path) == config
+
+
+def test_invalid_neighborhood_is_rejected():
+    config = ExperimentConfig(environment=EnvironmentConfig(num_agents=4, neighborhood_size=4))
+
+    with pytest.raises(ValueError, match="neighborhood_size"):
+        config.validate()
+
+
+@requires_torch
+def test_run_directory_contains_reproducibility_files(tmp_path):
+    run_directory = create_run_directory(
+        tmp_path,
+        ExperimentConfig(seed=9),
+        "mappo toy",
+        now=datetime(2026, 8, 31, tzinfo=timezone.utc),
+    )
+
+    assert run_directory.name == "2026-08-31_000000Z_mappo-toy_seed9"
+    assert (run_directory / "config.json").is_file()
+    assert (run_directory / "tensorboard").is_dir()
+    info = json.loads((run_directory / "environment_info.json").read_text())
+    assert info["device"] in {"cpu", "cuda", "mps"}
+
+
+@requires_torch
+def test_device_selection_returns_a_supported_torch_device():
+    assert select_device().type in {"cpu", "cuda", "mps"}
