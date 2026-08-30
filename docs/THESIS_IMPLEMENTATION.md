@@ -49,6 +49,7 @@ four local neighbors, seven discrete actions, and a 300-second decision interval
 
 ## Current status
 
-Phase 0 is complete: project scaffolding, configuration validation, run metadata,
-and device selection are in place. The next phase repairs and tests the existing
-MAPPO prototype before it is connected to orbital physics.
+The discrete MAPPO implementation is validated independently of orbital physics.
+See [MAPPO.md](MAPPO.md) for its CTDE design and rollout API. The immediate
+implementation objective is to validate learning in a small deterministic toy
+environment before connecting the policy to orbital simulation.
