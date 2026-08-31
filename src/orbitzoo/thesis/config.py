@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from orbitzoo.thesis.environments.rewards import RewardConfig
+from orbitzoo.thesis.environments.safety import SafetyConfig
 from orbitzoo.thesis.maneuvers.contract import ManeuverConfig
 
 
@@ -51,7 +53,7 @@ class PolicyConfig:
 
     def validate(self) -> None:
         if self.algorithm.lower() != "mappo":
-            raise ValueError("Phase 0 supports only the MAPPO policy configuration")
+            raise ValueError("only the MAPPO policy configuration is currently supported")
         if self.num_actions != 7:
             raise ValueError("the thesis action contract currently defines exactly 7 actions")
         for name, value in (
@@ -95,6 +97,8 @@ class ExperimentConfig:
     policy: PolicyConfig = field(default_factory=PolicyConfig)
     training: TrainingConfig = field(default_factory=TrainingConfig)
     maneuver: ManeuverConfig = field(default_factory=default_maneuver_config)
+    safety: SafetyConfig = field(default_factory=SafetyConfig)
+    rewards: RewardConfig = field(default_factory=RewardConfig)
     schema_version: int = 1
 
     def validate(self) -> None:
@@ -104,6 +108,8 @@ class ExperimentConfig:
         self.policy.validate()
         self.training.validate()
         self.maneuver.validate()
+        self.safety.validate()
+        self.rewards.validate()
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
@@ -126,6 +132,8 @@ class ExperimentConfig:
             policy=PolicyConfig(**raw["policy"]),
             training=TrainingConfig(**raw["training"]),
             maneuver=ManeuverConfig(**raw["maneuver"]) if "maneuver" in raw else default_maneuver_config(),
+            safety=SafetyConfig(**raw["safety"]) if "safety" in raw else SafetyConfig(),
+            rewards=RewardConfig(**raw["rewards"]) if "rewards" in raw else RewardConfig(),
         )
         config.validate()
         return config

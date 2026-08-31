@@ -58,3 +58,7 @@ before the policy is connected to orbital simulation.
 
 The [maneuver contract](MANEUVER_CONTRACT.md) defines the discrete action IDs,
 their RSW thrust directions, finite-burn execution, and delta-v accounting.
+
+The [collision-avoidance environment](COLLISION_AVOIDANCE_ENVIRONMENT.md)
+connects that contract to OrbitZoo propagation, deterministic conjunction
+screening, rewards, episode termination, and diagnostics.
