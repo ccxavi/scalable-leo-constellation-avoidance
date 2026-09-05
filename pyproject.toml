@@ -31,6 +31,7 @@ dependencies = [
     # Core simulation / RL
     "numpy==1.24.4",
     "pettingzoo==1.24.3",
+    "sgp4>=2.24,<3",
     "optuna",
     "tensorboardX",
     # Deep learning (CPU wheels from PyPI; see SETUP.md for CUDA)

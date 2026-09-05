@@ -58,6 +58,9 @@ def test_catalog_paths_are_resolved_from_configuration_directory(tmp_path: Path)
         CatalogConfig(tle_path=""),
         CatalogConfig(minimum_altitude_meters=-1),
         CatalogConfig(minimum_altitude_meters=500_000, maximum_altitude_meters=500_000),
+        CatalogConfig(maximum_tle_age_days=0),
+        CatalogConfig(maximum_tle_age_days=math.nan),
+        CatalogConfig(default_radius_meters=0),
     ],
 )
 def test_invalid_catalog_configuration_is_rejected(catalog: CatalogConfig) -> None:

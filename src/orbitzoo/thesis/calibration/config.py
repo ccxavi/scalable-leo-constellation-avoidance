@@ -49,6 +49,8 @@ class CatalogConfig:
     metadata_path: str = "../data/tle/objects.csv"
     minimum_altitude_meters: float = 200_000.0
     maximum_altitude_meters: float = 2_000_000.0
+    maximum_tle_age_days: float = 14.0
+    default_radius_meters: float = 1.0
 
     def validate(self) -> None:
         if not isinstance(self.tle_path, str) or not isinstance(self.metadata_path, str):
@@ -63,6 +65,10 @@ class CatalogConfig:
             raise ValueError("minimum_altitude_meters cannot be negative")
         if self.maximum_altitude_meters <= self.minimum_altitude_meters:
             raise ValueError("maximum_altitude_meters must exceed minimum_altitude_meters")
+        if not math.isfinite(self.maximum_tle_age_days) or self.maximum_tle_age_days <= 0:
+            raise ValueError("maximum_tle_age_days must be finite and positive")
+        if not math.isfinite(self.default_radius_meters) or self.default_radius_meters <= 0:
+            raise ValueError("default_radius_meters must be finite and positive")
 
 
 @dataclass(frozen=True)

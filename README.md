@@ -97,9 +97,12 @@ oz demo
 oz missions
 oz mission hohmann
 oz run path/to/mission.py
+oz catalog
 ```
 
 `oz run` and `oz mission` pass any remaining arguments to the selected script.
+`oz catalog` validates and summarizes the TLE and metadata files referenced by
+`configs/k_dt_calibration.json`; use `--config` to select another configuration.
 The legacy `orbitzoo-demo` command remains available for compatibility.
 
 # Tensorgator: Use Cases

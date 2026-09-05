@@ -1,6 +1,8 @@
 {
   "catalog": {
+    "default_radius_meters": 1.0,
     "maximum_altitude_meters": 2000000.0,
+    "maximum_tle_age_days": 14.0,
     "metadata_path": "../data/tle/objects.csv",
     "minimum_altitude_meters": 200000.0,
     "tle_path": "../data/tle/catalog.tle"

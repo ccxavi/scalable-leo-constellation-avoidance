@@ -71,4 +71,6 @@ actor input independent of constellation population size.
 The versioned [calibration configuration](K_DT_CALIBRATION.md) defines the
 catalog inputs, propagation window, candidate values, deterministic seeds, and
 passing thresholds that will be used to select `k` and the decision interval
-before MAPPO training.
+before MAPPO training. Its strict catalog loader now validates two-line and
+three-line TLE input, records NORAD IDs and UTC epochs, applies the configured
+freshness cutoff, and joins optional object metadata.
