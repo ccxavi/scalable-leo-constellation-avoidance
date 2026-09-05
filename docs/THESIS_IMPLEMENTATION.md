@@ -26,7 +26,9 @@ each satellite's local observation only.
 src/orbitzoo/                 reusable OrbitZoo code
 src/orbitzoo/thesis/          thesis-specific source code
 configs/                      versioned JSON experiment configurations
+utils/                        standalone data-pipeline scripts
 tests/                        automated tests
+data/                         TLE data and training scenario outputs (ignored)
 runs/                         generated metrics, metadata, and TensorBoard logs (ignored)
 checkpoints/                  generated model files (ignored)
 ```
@@ -74,3 +76,8 @@ passing thresholds that will be used to select `k` and the decision interval
 before MAPPO training. Its strict catalog loader now validates two-line and
 three-line TLE input, records NORAD IDs and UTC epochs, applies the configured
 freshness cutoff, and joins optional object metadata.
+
+Real-world training scenario candidates are ranked by satellite density across
+LEO orbital bands using CelesTrak TLE data. See [TRAINING_SCENARIOS.md](TRAINING_SCENARIOS.md)
+for the ranking methodology, field reference, and instructions to regenerate
+the data with `utils/scrape_tle.py` and `utils/identify_training_scenarios.py`.
