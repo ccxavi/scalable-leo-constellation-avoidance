@@ -67,3 +67,8 @@ The actor now receives fixed-width, threat-ranked local observations containing
 `k` relative-neighbour blocks with explicit padding masks. The critic receives
 a separate, deterministic full-system training state. This makes the deployed
 actor input independent of constellation population size.
+
+The versioned [calibration configuration](K_DT_CALIBRATION.md) defines the
+catalog inputs, propagation window, candidate values, deterministic seeds, and
+passing thresholds that will be used to select `k` and the decision interval
+before MAPPO training.
