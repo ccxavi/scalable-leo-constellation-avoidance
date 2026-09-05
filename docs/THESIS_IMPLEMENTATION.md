@@ -62,3 +62,8 @@ their RSW thrust directions, finite-burn execution, and delta-v accounting.
 The [collision-avoidance environment](COLLISION_AVOIDANCE_ENVIRONMENT.md)
 connects that contract to OrbitZoo propagation, deterministic conjunction
 screening, rewards, episode termination, and diagnostics.
+
+The actor now receives fixed-width, threat-ranked local observations containing
+`k` relative-neighbour blocks with explicit padding masks. The critic receives
+a separate, deterministic full-system training state. This makes the deployed
+actor input independent of constellation population size.

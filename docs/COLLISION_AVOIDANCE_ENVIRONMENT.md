@@ -17,12 +17,37 @@ has one row per satellite and is input only to the shared actor. `global_state`
 is a flattened state for every moving body and is input only to the centralized
 critic during training.
 
-The first working observation contains the satellite's normalized Cartesian
-position (3), velocity (3), and fuel fraction (1). It establishes and tests the
-full physics-to-MAPPO data contract. It is not the final scalable observation:
-the next observation change will replace this with a fixed-size relative
-neighbour representation, so deployed actors do not depend on constellation
-size.
+Each actor receives a fixed-width local observation. It begins with the
+satellite's normalized Cartesian position (3), velocity (3), and fuel fraction
+(1), followed by `k` threat-ranked neighbour blocks. Each neighbour block holds
+relative RSW position and velocity, time to closest approach, predicted miss
+distance, combined radius, maneuverability, fuel fraction, and a validity mask.
+Missing neighbours are zero-padded. The actor width is therefore `7 + 12k` and
+does not depend on constellation size.
+
+The feature order for one neighbour block is:
+
+| Features | Width | Normalization |
+| --- | ---: | --- |
+| relative RSW position | 3 | `10,000 km` |
+| relative RSW velocity | 3 | `10 km/s` |
+| time to closest approach | 1 | screening horizon |
+| predicted miss distance | 1 | safe separation, capped at `10` |
+| combined body radius | 1 | safe separation |
+| maneuverable flag | 1 | binary |
+| fuel fraction | 1 | initial fuel |
+| valid mask | 1 | binary |
+
+Candidate neighbours include both maneuvering satellites and debris. They are
+ordered deterministically by collision status, unsafe-conjunction status,
+predicted miss distance, and time to closest approach. Relative vectors use the
+observing satellite's RSW frame, matching the maneuver action frame.
+Every moving body must therefore have a unique, non-empty name.
+
+The critic-only global state uses a stable agent-first ordering and nine values
+per moving body: normalized Cartesian position and velocity, radius, fuel
+fraction, and maneuverability. Its size may depend on the training population;
+only the decentralized actor is population-size independent.
 
 ## One environment step
 

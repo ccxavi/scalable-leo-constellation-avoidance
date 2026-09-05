@@ -34,8 +34,8 @@ class EnvironmentConfig:
     def validate(self) -> None:
         if self.num_agents < 2:
             raise ValueError("num_agents must be at least 2")
-        if not 1 <= self.neighborhood_size < self.num_agents:
-            raise ValueError("neighborhood_size must be between 1 and num_agents - 1")
+        if self.neighborhood_size <= 0:
+            raise ValueError("neighborhood_size must be positive")
         if self.decision_interval_seconds <= 0:
             raise ValueError("decision_interval_seconds must be positive")
         if self.episode_horizon <= 0:

@@ -15,6 +15,7 @@ import numpy as np
 
 from orbitzoo.env import OrbitZoo
 from orbitzoo.thesis.environments.diagnostics import EpisodeDiagnostics
+from orbitzoo.thesis.environments.observations import LocalObservationEncoder
 from orbitzoo.thesis.environments.rewards import RewardConfig, calculate_rewards
 from orbitzoo.thesis.environments.safety import (
     PairSafetyAssessment,
@@ -32,18 +33,12 @@ from orbitzoo.thesis.maneuvers.contract import (
 )
 
 
-POSITION_SCALE_METERS = 10_000_000.0
-VELOCITY_SCALE_MPS = 10_000.0
-
-
 class CollisionAvoidanceEnv(OrbitZoo):
     """A synchronous, fixed-agent collision-avoidance environment.
 
-    The current observation is intentionally small: each actor sees its own
-    Cartesian position, velocity, and fuel fraction (seven values).  This
-    makes the complete physics/reward/termination loop testable now.  The
-    fixed-k relative-neighbour observation is added next without changing this
-    reset/step interface.
+    Each actor sees its own state followed by a fixed number of threat-ranked
+    relative-neighbor blocks. The centralized critic receives a separate full
+    state whose width is allowed to depend on the training population.
     """
 
     def __init__(
@@ -52,6 +47,7 @@ class CollisionAvoidanceEnv(OrbitZoo):
         maneuver_config: ManeuverConfig,
         safety_config: SafetyConfig | None = None,
         reward_config: RewardConfig | None = None,
+        neighborhood_size: int = 4,
         episode_horizon: int = 100,
         **orbitzoo_kwargs: Any,
     ) -> None:
@@ -65,6 +61,9 @@ class CollisionAvoidanceEnv(OrbitZoo):
         self.reward_config = reward_config or RewardConfig()
         self.safety_config.validate()
         self.reward_config.validate()
+        self.observation_encoder = LocalObservationEncoder(
+            neighborhood_size, self.safety_config
+        )
         self.episode_horizon = episode_horizon
         self.agent_names: list[str] = []
         self.step_index = 0
@@ -78,11 +77,11 @@ class CollisionAvoidanceEnv(OrbitZoo):
 
     @property
     def local_observation_dim(self) -> int:
-        return 7
+        return self.observation_encoder.local_observation_dim
 
     @property
     def global_state_dim(self) -> int:
-        return 7 * len(self.dynamics.get_moving_bodies())
+        return self.observation_encoder.global_state_dim(len(self._moving_bodies()))
 
     def _moving_bodies(self) -> list[Any]:
         return list(self.dynamics.get_moving_bodies())
@@ -90,27 +89,13 @@ class CollisionAvoidanceEnv(OrbitZoo):
     def _spacecraft_by_name(self) -> dict[str, Any]:
         return {spacecraft.name: spacecraft for spacecraft in self.dynamics.spacecrafts}
 
-    def _feature_vector(self, body: Any) -> np.ndarray:
-        fuel_fraction = 0.0
-        if body.name in self.agent_names:
-            fuel_fraction = body.get_fuel() / body.initial_fuel_mass if body.initial_fuel_mass > 0 else 0.0
-        return np.concatenate(
-            (
-                np.asarray(body.position, dtype=np.float32) / POSITION_SCALE_METERS,
-                np.asarray(body.velocity, dtype=np.float32) / VELOCITY_SCALE_MPS,
-                np.asarray([fuel_fraction], dtype=np.float32),
-            )
+    def _state(
+        self, assessments: Sequence[PairSafetyAssessment] | None = None
+    ) -> tuple[np.ndarray, np.ndarray]:
+        state = self.observation_encoder.encode(
+            self._moving_bodies(), self.agent_names, assessments
         )
-
-    def _state(self) -> tuple[np.ndarray, np.ndarray]:
-        spacecraft = self._spacecraft_by_name()
-        local_observations = np.stack(
-            [self._feature_vector(spacecraft[name]) for name in self.agent_names]
-        ).astype(np.float32)
-        global_state = np.concatenate(
-            [self._feature_vector(body) for body in self._moving_bodies()]
-        ).astype(np.float32)
-        return local_observations, global_state
+        return state.local_observations, state.global_state
 
     def _assessments(self) -> list[PairSafetyAssessment]:
         return assess_all_pairs(self._moving_bodies(), self.safety_config)
@@ -145,8 +130,9 @@ class CollisionAvoidanceEnv(OrbitZoo):
         self.step_index = 0
         self.is_terminated = False
         self.diagnostics = EpisodeDiagnostics(self.agent_names)
-        self.diagnostics.record_minimum_separation(self._minimum_separation(self._assessments()))
-        return self._state()
+        assessments = self._assessments()
+        self.diagnostics.record_minimum_separation(self._minimum_separation(assessments))
+        return self._state(assessments)
 
     def _commands_for_actions(
         self, action_ids: np.ndarray
@@ -214,7 +200,7 @@ class CollisionAvoidanceEnv(OrbitZoo):
         self.diagnostics.record_maneuvers(results)
         self.diagnostics.record_minimum_separation(self._minimum_separation(assessments_after))
         self.diagnostics.collision_pairs.extend(collision_pairs)
-        local_observations, global_state = self._state()
+        local_observations, global_state = self._state(assessments_after)
         dones = np.full(self.num_agents, self.is_terminated, dtype=bool)
         info = {
             "step_index": self.step_index,

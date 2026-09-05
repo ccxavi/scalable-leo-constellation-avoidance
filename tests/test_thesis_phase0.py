@@ -29,10 +29,16 @@ def test_config_round_trip(tmp_path):
 
 
 def test_invalid_neighborhood_is_rejected():
-    config = ExperimentConfig(environment=EnvironmentConfig(num_agents=4, neighborhood_size=4))
+    config = ExperimentConfig(environment=EnvironmentConfig(num_agents=4, neighborhood_size=0))
 
     with pytest.raises(ValueError, match="neighborhood_size"):
         config.validate()
+
+
+def test_neighborhood_may_exceed_training_agent_count_for_padding():
+    config = ExperimentConfig(environment=EnvironmentConfig(num_agents=4, neighborhood_size=8))
+
+    config.validate()
 
 
 @requires_torch
